@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Napi Fitnesz Követés</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2196f3" />
+  <style>
+    /* A korábban küldött stílusok itt */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌟 Napi Fitnesz Követés</h1>
+
+    <div class="section">
+      <h2>⚙️ Kalóriacél beállítása</h2>
+      <label for="celKaloriaInput">Napi cél (kcal):</label>
+      <input type="number" id="celKaloriaInput" value="2000" />
+      <button onclick="frissitCelKaloria()">Mentés</button>
+    </div>
+
+    <div class="section">
+      <h2>🚶‍♂️ Lépésszámláló</h2>
+      <label for="lepesInput">Napi lépésszám:</label>
+      <input type="number" id="lepesInput" placeholder="pl. 7500" />
+      <button onclick="frissitLepesek()">Frissítés</button>
+      <div class="tracker-output" id="lepesKiiras">Ma: 0 / 10000 lépés</div>
+    </div>
+
+    <div class="section">
+      <h2>🍽️ Kalóriabevitel</h2>
+      <label for="etel">Étel neve:</label>
+      <input type="text" id="etel" placeholder="pl. rántotta" />
+      <label for="kaloria">Kalória (kcal):</label>
+      <input type="number" id="kaloria" placeholder="pl. 300" />
+      <button onclick="hozzaadEtel()">Hozzáadás</button>
+      <div class="food-list" id="etelLista"></div>
+    </div>
+
+    <div class="section">
+      <h2>📊 Napi Összegzés</h2>
+      <div class="tracker-output" id="elegetett">Elégetett kalória: 0 kcal</div>
+      <div class="tracker-output" id="bevitt">Bevitt kalória: 0 kcal</div>
+      <div class="tracker-output" id="megEhetsz">Még ehetsz ma: 0 kcal</div>
+    </div>
+
+    <div class="section">
+      <h2>🏋️‍♀️ Napi edzésajánló</h2>
+      <ul>
+        <li>3×15 fekvőtámasz</li>
+        <li>3×20 guggolás</li>
+        <li>10 perc plank</li>
+        <li>20 perc séta vagy kocogás</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    let osszesBevitt = 0;
+    let elegetett = 0;
+    let celKaloria = 2000;
+
+    function frissitCelKaloria() {
+      const ujCel = parseInt(document.getElementById("celKaloriaInput").value);
+      if (!isNaN(ujCel)) {
+        celKaloria = ujCel;
+        frissitTracker();
+      }
+    }
+
+    function frissitLepesek() {
+      const lepes = parseInt(document.getElementById("lepesInput").value) || 0;
+      document.getElementById("lepesKiiras").innerText = `Ma: ${lepes} / 10000 lépés`;
+      elegetett = Math.round(lepes * 0.04);
+      document.getElementById("elegetett").innerText = `Elégetett kalória: ${elegetett} kcal`;
+      frissitTracker();
+    }
+
+    function hozzaadEtel() {
+      const etel = document.getElementById("etel").value;
+      const kal = parseInt(document.getElementById("kaloria").value) || 0;
+      if (etel && kal > 0) {
+        osszesBevitt += kal;
+        const uj = document.createElement("div");
+        uj.className = "food-item";
+        uj.innerText = `${etel} – ${kal} kcal`;
+        document.getElementById("etelLista").appendChild(uj);
+        document.getElementById("bevitt").innerText = `Bevitt kalória: ${osszesBevitt} kcal`;
+        frissitTracker();
+      }
+    }
+
+    function frissitTracker() {
+      const maradhat = celKaloria - osszesBevitt + elegetett;
+      document.getElementById("megEhetsz").innerText = `Még ehetsz ma: ${maradhat} kcal`;
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(function(reg) {
+        console.log('Service Worker regisztrálva!', reg);
+      });
+    }
+  </script>
+</body>
+</html>
